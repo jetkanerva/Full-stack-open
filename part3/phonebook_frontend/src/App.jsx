@@ -112,10 +112,11 @@ const App = () => {
                     setSuccessMessage('');
                 }, 5000);
             }).catch(error => {
-            setErrorMessage(error);
-            setTimeout(() => {
-                setErrorMessage('');
-            }, 5000); // Clear the error message after 5 seconds
+                console.log(error);
+                setErrorMessage(error.response.data.error);
+                setTimeout(() => {
+                    setErrorMessage('');
+                    }, 5000);
         });
     }
 
@@ -127,11 +128,10 @@ const App = () => {
                     setPersons(persons.filter(p => p.id !== id));
                 })
                 .catch(error => {
-                    // Handle the error here
                     setErrorMessage(`Information of ${person.name} has already been removed from server`);
                     setTimeout(() => {
                         setErrorMessage('');
-                    }, 5000); // Clear the error message after 5 seconds
+                    }, 5000);
                 });
         }
     }
