@@ -8,6 +8,7 @@
     "start_mongo-js": "node mongo.js",
     "test": "echo \\\"Error: no test specified\\\" && exit 1"
   },
+  "lint": "eslint .",
   "author": "Jeti",
   "license": "MIT",
   "dependencies": {
@@ -15,5 +16,12 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "mongoose": "^7.6.5"
+  },
+  "devDependencies": {
+    "eslint": "^8.54.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-n": "^16.3.1",
+    "eslint-plugin-promise": "^6.1.1"
   }
 }

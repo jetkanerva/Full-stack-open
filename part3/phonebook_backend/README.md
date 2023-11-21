@@ -1,10 +1,16 @@
 ## This backend has been created with node.js
 
 ## To run the app locally - open this directory in the terminal and:
-`npm install`
-`npm start YOUR_MONGODB_PSW`
+1. `npm install`
 
-(app will be deployed to Port 3001)
+2. Create .env file with following parameters:
+
+   `MONGODB_URI=`
+
+   `PORT=`
+
+
+3. `npm start`
 
 ## The app has been deployed online using Render
 
