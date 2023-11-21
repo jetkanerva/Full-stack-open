@@ -111,7 +111,12 @@ const App = () => {
                 setTimeout(() => {
                     setSuccessMessage('');
                 }, 5000);
-            })
+            }).catch(error => {
+            setErrorMessage(error);
+            setTimeout(() => {
+                setErrorMessage('');
+            }, 5000); // Clear the error message after 5 seconds
+        });
     }
 
     const deletePerson = (id) => {
