@@ -1,8 +1,11 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const cors = require('cors');
 app.use(cors())
 app.use(express.json());
+
+const Person = require('./models/note')
 
 const requestLogger = (request, response, next) => {
     const start = Date.now();
@@ -44,46 +47,26 @@ function getTimeEET() {
     return formattedDateTime + " (" + timeZoneName + ")";
 }
 
-let notes = [
-    {
-        "id": 1,
-        "name": "Arto Hellas",
-        "number": "040-123456"
-    },
-    {
-        "id": 2,
-        "name": "Ada Lovelace",
-        "number": "39-44-5323523"
-    },
-    {
-        "id": 3,
-        "name": "Dan Abramov",
-        "number": "12-43-234345"
-    },
-    {
-        "id": 4,
-        "name": "Mary Poppendieck",
-        "number": "39-23-6423122"
-    }
-]
-
 app.get('/api/persons', (request, response) => {
-    response.json(notes)
-})
+    Person.find({}).then(people => {
+        response.json(people);
+    });
+});
 
-app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id);
-    const note = notes.find(note => note.id === id);
-
-    if (note) {
-        response.json(note);
-    } else {
-        response.status(404).send({ error: 'Note not found' });
-    }
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+        .then(people => {
+            if (people) {
+                response.json(people);
+            } else {
+                response.status(404).end();
+            }
+        })
+        .catch(error => next(error));
 });
 
 app.get('/info', (request, response) => {
-    const numberOfEntries = notes.length;
+    const numberOfEntries = Person.length;
     const currentTime = getTimeEET();
     const data = {
         message : `This page contains information about ${numberOfEntries} people.`,
@@ -114,7 +97,7 @@ app.post('/api/persons', (request, response) => {
         });
     }
 
-    if (notes.some(note => note.name === body.name)) {
+    if (people.some(note => note.name === body.name)) {
         return response.status(400).json({
             error: 'name must be unique'
         });
@@ -129,22 +112,24 @@ app.post('/api/persons', (request, response) => {
         number: body.number
     };
 
-    notes.push(newNote);
-    response.json(newNote);
+    newNote.save()
+        .then(savedNote => {
+            response.json(savedNote);
+        })
 });
 
 app.delete('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id);
-    const noteIndex = notes.findIndex(note => note.id === id);
+    const noteIndex = Person.findIndex(note => note.id === id);
 
     console.log(id)
     console.log(noteIndex)
 
     if (noteIndex !== -1) {
-        notes.splice(noteIndex, 1);
+        Person.splice(noteIndex, 1);
         response.status(200).send({ message: 'Person deleted successfully' });
     } else {
-        response.status(404).send({ error: 'Note not found' });
+        response.status(404).send({ error: 'Person not found' });
     }
 });
 
@@ -155,7 +140,7 @@ const unknownEndpoint = (request, response) => {
 app.use(express.static('dist'))
 app.use(unknownEndpoint)
 
-const PORT = 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
