@@ -116,6 +116,35 @@ test('blog without title or url is not added', async () => {
     assert.equal(response.body.length, initialBlogs.length, 'Total number of blogs should not increase');
 });
 
+test('a blog post can be deleted', async () => {
+    const blogsAtStart = await Blog.find({});
+    const blogToDelete = blogsAtStart[0];
+
+    await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .expect(204);
+
+    const blogsAtEnd = await Blog.find({});
+    assert.equal(blogsAtEnd.length, blogsAtStart.length - 1, 'Should decrease the blog count');
+});
+
+test('blog post can be successfully updated', async () => {
+    const blogsAtStart = await Blog.find({});
+    const blogToUpdate = blogsAtStart[0].toJSON();
+
+    const newLikes = blogToUpdate.likes + 1;
+
+    await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send({ ...blogToUpdate, likes: newLikes })
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+
+    const updatedBlog = await Blog.findById(blogToUpdate.id);
+
+    assert.strictEqual(updatedBlog.likes, newLikes, 'The likes should be incremented by 1');
+});
+
 after(async () => {
     await mongoose.connection.close()
 })
