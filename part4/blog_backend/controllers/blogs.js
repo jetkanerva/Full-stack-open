@@ -1,9 +1,19 @@
-const router = require('express').Router()
-const Blog = require('../models/blog')
+const router = require('express').Router();
+const Blog = require('../models/blog');
+const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+
+const getTokenFrom = request => {
+    const authorization = request.get('authorization')
+    if (authorization && authorization.startsWith('Bearer ')) {
+        return authorization.replace('Bearer ', '')
+    }
+    return null
+}
 
 router.get('/api/blogs', async (request, response) => {
     try {
-        const blogs = await Blog.find({}).find({}).populate('users');
+        const blogs = await Blog.find({}).find({}).populate('users', { username: 1, name: 1, id: 1 });
         console.log(blogs)
         response.status(200).json(blogs);
     } catch (error) {
@@ -12,15 +22,37 @@ router.get('/api/blogs', async (request, response) => {
 });
 
 router.post('/api/blogs', async (request, response) => {
-    const { title, url } = request.body;
+    const body = request.body;
+    let user;
+    try {
+        const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
+        if (!decodedToken.id) {
+            return response.status(401).json({ error: 'token invalid' })
+        }
+        user = await User.findById(decodedToken.id);
+    } catch (error) {
+        return response.status(403).json({ error: "Athentication failed!" });
+    }
+
+    console.log(user);
+
+    const { title, author, url, likes } = body;
     if (!title || !url) {
         return response.status(400).json({ error: 'Blog post must include both title and url' });
     }
 
     try {
-        const blog = new Blog(request.body);
-        const result = await blog.save();
-        response.status(201).json(result);
+        const blog = new Blog({
+            title,
+            author,
+            url,
+            likes,
+            users: user._id
+        });
+        const savedBlog = await blog.save();
+        user.blogs = user.blogs.concat(savedBlog._id)
+        await user.save()
+        response.status(201).json(savedBlog);
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
@@ -49,7 +81,7 @@ router.put('/api/blogs/:id', async (request, response) => {
             response.status(404).end();
         }
     } catch (error) {
-        response.status(500).json({ error: error.message }); // Bad request for invalid ID formats, etc.
+        response.status(500).json({ error: error.message });
     }
 });
 
