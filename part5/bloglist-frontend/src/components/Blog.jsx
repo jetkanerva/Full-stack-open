@@ -4,6 +4,8 @@ import blogService from '../services/blogs';
 const Blog = ({ blog, setBlogs, setErrorMessage }) => {
   const [detailsVisible, setDetailsVisible] = useState(false);
 
+  console.log(blog)
+
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -16,8 +18,8 @@ const Blog = ({ blog, setBlogs, setErrorMessage }) => {
     const updatedBlog = { ...blog, likes: blog.likes + 1 };
 
     try {
-      const returnedBlog = await blogService.update(blog.id, updatedBlog);
-      setBlogs(blogs => blogs.map(b => b.id !== blog.id ? b : returnedBlog));
+      await blogService.update(blog.id, updatedBlog);
+      setBlogs(blogs => blogs.map(b => b.id !== blog.id ? b : updatedBlog));
     } catch (exception) {
       console.error(exception);
       setErrorMessage('Failed to update likes');
@@ -41,7 +43,7 @@ const Blog = ({ blog, setBlogs, setErrorMessage }) => {
             <div>
               <p>URL: {blog.url}</p>
               <p>Likes: {blog.likes} <button onClick={handleLike}>Like</button></p>
-              <p>Added by: {blog.user ? blog.user.name : 'Anonymous'}</p>
+              <p>Added by: {blog.users ? blog.users[0].name : 'Anonymous'}</p>
             </div>
         )}
       </div>
