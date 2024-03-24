@@ -2,8 +2,6 @@ const { test, describe } = require('node:test')
 const assert = require('node:assert')
 const listHelper = require('../utils/list_helper')
 
-// Run with: node --test list_helper.test.js
-
 const blogs = [
     {
         _id: "5a422a851b54a676234d17f7",
