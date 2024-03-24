@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
-import Blog from './components/Blog'
-import blogService from './services/blogs'
-import loginService from './services/login'
+import React, { useState, useEffect } from 'react';
+import Blog from './components/Blog';
+import CreateBlogForm from './components/blogForm.jsx';
+import blogService from './services/blogs';
+import loginService from './services/login';
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
@@ -10,40 +11,36 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [user, setUser] = useState(null);
-  const [title, setTitle] = useState(null);
-  const [author, setAuthor] = useState(null);
-  const [url, setUrl] = useState(null);
-  const [formVisible, setFormVisible] = useState(false);
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
+    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser');
     if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
+      const user = JSON.parse(loggedUserJSON);
+      setUser(user);
+      blogService.setToken(user.token);
     }
     blogService.getAll().then(blogs =>
         setBlogs(blogs)
-    )
-  }, [])
+    );
+  }, []);
 
   const handleLogin = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
     try {
       const user = await loginService.login({
         username, password,
-      })
+      });
       window.localStorage.setItem(
           'loggedBlogappUser', JSON.stringify(user)
-      )
-      setErrorMessage(null);
+      );
+      blogService.setToken(user.token);
       setUser(user);
       setUsername('');
       setPassword('');
       setSuccessMessage('Login successful');
       setTimeout(() => {
-        setErrorMessage(null)
+        setSuccessMessage(null)
       }, 5000);
     } catch (exception) {
       setErrorMessage('Wrong credentials');
@@ -51,45 +48,13 @@ const App = () => {
         setErrorMessage(null)
       }, 5000)
     }
-  }
+  };
 
   const handleLogout = async () => {
-    try {
-      await window.localStorage.clear();
-      window.location.reload();
-    } catch (exception) {
-      console.log(exception);
-    }
-  }
-
-  const handleNewBlog = async (event) => {
-    event.preventDefault()
-
-    try {
-      await blogService.create({
-        title, author, url
-      })
-      blogService.getAll().then(blogs =>
-          setBlogs(blogs)
-      )
-      setTitle('');
-      setAuthor('');
-      setUrl('');
-      setSuccessMessage(`a new blog "${title}" by ${author} added`);
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 5000);
-    } catch (exception) {
-      console.log(exception);
-      setErrorMessage(exception);
-      setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
-    }
-  }
-
-  const hideWhenVisible = { display: formVisible ? 'none' : '' }
-  const showWhenVisible = { display: formVisible ? '' : 'none' }
+    window.localStorage.removeItem('loggedBlogappUser');
+    setUser(null);
+    blogService.setToken(null); // Clear token on logout
+  };
 
   if (!user) {
     return (
@@ -102,7 +67,7 @@ const App = () => {
                   type="text"
                   value={username}
                   name="Username"
-                  onChange={({target}) => setUsername(target.value)}
+                  onChange={({ target }) => setUsername(target.value)}
               />
             </div>
             <div>
@@ -111,7 +76,7 @@ const App = () => {
                   type="password"
                   value={password}
                   name="Password"
-                  onChange={({target}) => setPassword(target.value)}
+                  onChange={({ target }) => setPassword(target.value)}
               />
             </div>
             <button type="submit">login</button>
@@ -124,53 +89,17 @@ const App = () => {
 
   return (
       <div>
-        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
-        {successMessage && <div style={{ color: 'green' }}>{successMessage}</div>}
         <h2>blogs</h2>
         <h4>{user.name} logged in</h4>
         <button onClick={handleLogout}>logout</button>
         <div>
-          <div style={hideWhenVisible}>
-            <button onClick={() => setFormVisible(true)}>Create new</button>
-          </div>
-          <div style={showWhenVisible}>
-            <h2>Create new</h2>
-            <form onSubmit={handleNewBlog}>
-              <div>
-                title
-                <input
-                    type="text"
-                    value={title}
-                    name="title"
-                    onChange={({target}) => setTitle(target.value)}
-                />
-              </div>
-              <div>
-                author
-                <input
-                    type="text"
-                    value={author}
-                    name="author"
-                    onChange={({target}) => setAuthor(target.value)}
-                />
-              </div>
-              <div>
-                url
-                <input
-                    type="text"
-                    value={url}
-                    name="url"
-                    onChange={({target}) => setUrl(target.value)}
-                />
-              </div>
-              <button type="submit" onClick={() => setFormVisible(true)}>Create</button>
-            </form>
-            <button onClick={() => setFormVisible(false)}>cancel</button>
-          </div>
+          <CreateBlogForm
+              setBlogs={setBlogs}
+          />
         </div>
-        {blogs.map(blog => <Blog key={blog.id} blog={blog}/>)}
+        {blogs.map(blog => <Blog key={blog.id} blog={blog} />)}
       </div>
   );
-}
+};
 
-export default App
+export default App;
