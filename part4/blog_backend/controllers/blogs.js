@@ -3,7 +3,7 @@ const Blog = require('../models/blog')
 
 router.get('/api/blogs', async (request, response) => {
     try {
-        const blogs = await Blog.find({});
+        const blogs = await Blog.find({}).find({}).populate('users');
         console.log(blogs)
         response.status(200).json(blogs);
     } catch (error) {
