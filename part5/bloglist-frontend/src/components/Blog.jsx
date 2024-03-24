@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import blogService from '../services/blogs';
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, setBlogs, setErrorMessage }) => {
   const [detailsVisible, setDetailsVisible] = useState(false);
 
   const blogStyle = {
@@ -9,7 +10,22 @@ const Blog = ({ blog }) => {
     border: 'solid',
     borderWidth: 1,
     marginBottom: 5
-  }
+  };
+
+  const handleLike = async () => {
+    const updatedBlog = { ...blog, likes: blog.likes + 1 };
+
+    try {
+      const returnedBlog = await blogService.update(blog.id, updatedBlog);
+      setBlogs(blogs => blogs.map(b => b.id !== blog.id ? b : returnedBlog));
+    } catch (exception) {
+      console.error(exception);
+      setErrorMessage('Failed to update likes');
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 5000);
+    }
+  };
 
   const toggleDetails = () => {
     setDetailsVisible(!detailsVisible);
@@ -24,7 +40,7 @@ const Blog = ({ blog }) => {
         {detailsVisible && (
             <div>
               <p>URL: {blog.url}</p>
-              <p>Likes: {blog.likes} <button>Like</button></p>
+              <p>Likes: {blog.likes} <button onClick={handleLike}>Like</button></p>
               <p>Added by: {blog.user ? blog.user.name : 'Anonymous'}</p>
             </div>
         )}
