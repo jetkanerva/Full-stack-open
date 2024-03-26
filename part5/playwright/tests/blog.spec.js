@@ -30,7 +30,7 @@ describe('Blog tests', () => {
         await page.locator('role=button[name="logout"]').waitFor();
 
         // User should now be logged in and blogs database be empty
-        await page.click('text=New');
+        await page.click('role=button[name="New"]');
         await page.locator('role=button[name="Create"]').waitFor();
 
         await page.waitForSelector('input[name="title"]', { state: 'visible' });
@@ -43,7 +43,7 @@ describe('Blog tests', () => {
         await expect(page.locator('role=heading[name="test2 Blog"]')).toBeVisible();
     });
 
-    test('allows a logged in user to create a blog', async ({ page }) => {
+    test('User can like a post', async ({ page }) => {
         // Init
         await page.goto('http://localhost:5173');
         await page.fill('input[name="Username"]', 'mluukkai');
@@ -51,17 +51,26 @@ describe('Blog tests', () => {
         await page.click('role=button[name="login"]');
         await page.locator('role=button[name="logout"]').waitFor();
 
-        // User should now be logged in and blogs database be empty
-        await page.click('text=New');
+        // Post has to be created first in order to edit it
+        await page.click('role=button[name="New"]');
         await page.locator('role=button[name="Create"]').waitFor();
-
         await page.waitForSelector('input[name="title"]', { state: 'visible' });
         await page.fill('input[name="title"]', 'test2 Blog');
         await page.fill('input[name="author"]', 'test Author');
         await page.fill('input[name="url"]', 'https://example.com');
         await page.locator("[type=submit]").click();
-
         await page.locator('role=heading[name="test2 Blog"]').waitFor();
-        await expect(page.locator('role=heading[name="test2 Blog"]')).toBeVisible();
+
+        const pageContent = await page.content();
+        console.log(pageContent);
+
+        await page.getByText('View').click()
+        await page.locator('role=button[name="Hide"]').waitFor();
+
+        await page.locator('role=button[name="Like"]').click();
+        await page.locator('role=button[name="Like"]').click();
+
+        await page.locator('text=Likes: 2').waitFor()
+        await expect(page.locator('text=Likes: 2')).toBeVisible();
     });
 });

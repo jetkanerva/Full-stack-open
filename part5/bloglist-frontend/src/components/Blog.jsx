@@ -74,4 +74,4 @@ const Blog = ({ blog, setBlogs, setErrorMessage, user }) => {
   )
 }
 
-export default Blog
+export default Blog;
