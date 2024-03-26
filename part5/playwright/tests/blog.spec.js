@@ -3,20 +3,10 @@ const { test, expect, beforeEach, afterEach, describe } = require('@playwright/t
 describe('Blog tests', () => {
     beforeEach(async ({ page, request }) => {
         await request.post('http://localhost:3001/api/testing/reset');
-        await request.post('http://localhost:3001/api/users', {
-            data: {
-                name: 'Matti Luukkainen',
-                username: 'mluukkai',
-                password: 'salainen'
-            }
-        });
-
-        await page.goto('http://localhost:5173');
-        await page.fill('input[name="Username"]', 'mluukkai');
-        await page.fill('input[name="Password"]', 'salainen');
-        await page.click('role=button[name="login"]');
-        await page.locator('role=button[name="logout"]').waitFor();
-        await page.goto('http://localhost:5173');
+        const name = 'Matti Luukkainen';
+        const username = 'mluukkai';
+        const password = 'salainen';
+        await createAndLoginUser(page, name, username, password, request)
     });
 
     test('allows a logged in user to create a blog', async ({ page }) => {
@@ -78,14 +68,62 @@ describe('Blog tests', () => {
         const pageContent = await page.content();
         console.log(pageContent);
 
+        page.on('dialog', dialog => dialog.accept());
         await page.getByText('Delete').click()
-        page.once('dialog', async dialog => {
-            await dialog.accept();
-        });
 
         await page.waitForTimeout(500);
 
         // Blog should now be deleted
         await expect(page.locator('role=heading[name="test2 Blog"]')).toBeHidden();
     });
+
+    test('only the user who added the blog sees the delete button', async ({ page, context, request }) => {
+        await page.click('role=button[name="New"]');
+        await page.locator('role=button[name="Create"]').waitFor();
+        await page.waitForSelector('input[name="title"]', { state: 'visible' });
+        await page.fill('input[name="title"]', 'test2 Blog');
+        await page.fill('input[name="author"]', 'test Author');
+        await page.fill('input[name="url"]', 'https://example.com');
+        await page.locator("[type=submit]").click();
+        await page.locator('role=heading[name="test2 Blog"]').waitFor();
+
+        await page.goto('http://localhost:5173/');
+        await page.locator('role=heading[name="test2 Blog"]').waitFor();
+
+        await page.getByText('View').click()
+        await page.locator('role=button[name="Hide"]').waitFor();
+
+        // Delete button should be visible for mluukkai
+        await expect(page.getByText('Delete')).toBeVisible()
+
+        // Create new user
+        const name = 'Hacker';
+        const username = 'hacker';
+        const password = '1234';
+        await page.click('role=button[name="logout"]');
+        await createAndLoginUser(page, name, username, password, request)
+
+        await page.locator('role=heading[name="test2 Blog"]').waitFor();
+        await page.getByText('View').click()
+        await page.locator('role=button[name="Hide"]').waitFor();
+
+        // The Delete button should not be shown for another user
+        await expect(page.getByText('Delete')).toBeHidden()
+    });
 });
+
+async function createAndLoginUser(page, name, username, password, request) {
+    await request.post('http://localhost:3001/api/users', {
+        data: {
+            name: name,
+            username: username,
+            password: password
+        }
+    });
+    await page.goto('http://localhost:5173/login');
+    await page.fill('input[name="Username"]', username);
+    await page.fill('input[name="Password"]', password);
+    await page.click('role=button[name="login"]');
+    await page.locator('role=button[name="logout"]').waitFor();
+    await page.goto('http://localhost:5173');
+}
