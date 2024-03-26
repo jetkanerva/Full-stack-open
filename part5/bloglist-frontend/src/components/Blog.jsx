@@ -47,8 +47,13 @@ const Blog = ({ blog, setBlogs, setErrorMessage, user }) => {
   }
 
   return (
-    <div style={blogStyle}>
-      {blog.title} {blog.author}
+    <div style={blogStyle} className="blog">
+      <h4>
+        {blog.title}
+      </h4>
+      <h4>
+        {blog.author}
+      </h4>
       <button onClick={toggleDetails} style={{ marginLeft: '10px' }}>
         {detailsVisible ? 'Hide' : 'View'}
       </button>

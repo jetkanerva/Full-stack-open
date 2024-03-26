@@ -1,14 +1,31 @@
-import { render, screen } from '@testing-library/react'
-import Note from './Note'
+import { render, screen } from '@testing-library/react';
+import Blog from './Blog';
 
-test('renders content', () => {
-    const note = {
-        content: 'Component testing is done with react-testing-library',
-        important: true
+test('renders blogs title and author, but not URL or likes by default', () => {
+    const blog = {
+        title: 'Test Driven Development with React',
+        author: 'Jane Doe',
+        url: 'https://example.com/blog/tdd-react',
+        likes: 5,
+        users: [{ name: 'John Doe' }],
+        id: 'blog123'
     }
 
-    render(<Note note={note} />)
+    const mockSetBlogs = vi.fn()
+    const mockSetErrorMessage = vi.fn()
+    const user = { name: 'John Doe' }
 
-    const element = screen.getByText('Component testing is done with react-testing-library')
+    render(<Blog blog={blog} setBlogs={mockSetBlogs} setErrorMessage={mockSetErrorMessage} user={user} />)
+
+    const element = screen.getByText(blog.title)
     expect(element).toBeDefined()
-})
+
+    const authorElement = screen.getByText(blog.author)
+    expect(authorElement).toBeDefined()
+
+    const urlElement = screen.queryByText(`URL: ${blog.url}`)
+    expect(urlElement).toBeNull()
+
+    const likesElement = screen.queryByText(`Likes: ${blog.likes}`)
+    expect(likesElement).toBeNull()
+});
