@@ -9,8 +9,8 @@ testingRouter.post('/reset', async (request, response) => {
         return response.status(403).json({ error: 'not allowed' });
     }
 
-    await Blog.deleteMany({});
     await User.deleteMany({});
+    await Blog.deleteMany({});
 
     response.status(204).end();
 });
