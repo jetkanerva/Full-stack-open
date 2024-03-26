@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import CreateBlogForm from './components/blogForm.jsx'
 import blogService from './services/blogs'
-import loginService from './services/login'
-import LoginForm from './components/LoginForm'
+import loginService from './services/login.jsx'
+import LoginForm from './components/LoginForm.jsx'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
