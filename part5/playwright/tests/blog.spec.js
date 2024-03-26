@@ -1,8 +1,8 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect, beforeEach, afterEach, describe } = require('@playwright/test');
 
-test.describe('Blog app', () => {
-    test.beforeEach(async ({ page, request }) => {
-        await request.post('http:localhost:3001/api/testing/reset');
+describe('Blog tests', () => {
+    beforeEach(async ({ page, request }) => {
+        await request.post('http://localhost:3001/api/testing/reset');
         await request.post('http://localhost:3001/api/users', {
             data: {
                 name: 'Matti Luukkainen',
@@ -12,20 +12,56 @@ test.describe('Blog app', () => {
         });
 
         await page.goto('http://localhost:5173');
-
         await page.fill('input[name="Username"]', 'mluukkai');
         await page.fill('input[name="Password"]', 'salainen');
-        await page.click('text=login');
+
+        await page.click('role=button[name="login"]');
+        await page.locator('role=button[name="logout"]').waitFor();
+        await page.click('role=button[name="logout"]');
+        await page.locator('role=button[name="login"]').waitFor();
     });
 
     test('allows a logged in user to create a blog', async ({ page }) => {
-        await page.click('text=Create new');
-        await page.fill('input[name="title"]', 'test Blog');
+        // Init
+        await page.goto('http://localhost:5173');
+        await page.fill('input[name="Username"]', 'mluukkai');
+        await page.fill('input[name="Password"]', 'salainen');
+        await page.click('role=button[name="login"]');
+        await page.locator('role=button[name="logout"]').waitFor();
+
+        // User should now be logged in and blogs database be empty
+        await page.click('text=New');
+        await page.locator('role=button[name="Create"]').waitFor();
+
+        await page.waitForSelector('input[name="title"]', { state: 'visible' });
+        await page.fill('input[name="title"]', 'test2 Blog');
         await page.fill('input[name="author"]', 'test Author');
         await page.fill('input[name="url"]', 'https://example.com');
+        await page.locator("[type=submit]").click();
 
-        await page.click('text=Create');
+        await page.locator('role=heading[name="test2 Blog"]').waitFor();
+        await expect(page.locator('role=heading[name="test2 Blog"]')).toBeVisible();
+    });
 
-        await expect(page.locator('text=text Blog')).toBeVisible();
+    test('allows a logged in user to create a blog', async ({ page }) => {
+        // Init
+        await page.goto('http://localhost:5173');
+        await page.fill('input[name="Username"]', 'mluukkai');
+        await page.fill('input[name="Password"]', 'salainen');
+        await page.click('role=button[name="login"]');
+        await page.locator('role=button[name="logout"]').waitFor();
+
+        // User should now be logged in and blogs database be empty
+        await page.click('text=New');
+        await page.locator('role=button[name="Create"]').waitFor();
+
+        await page.waitForSelector('input[name="title"]', { state: 'visible' });
+        await page.fill('input[name="title"]', 'test2 Blog');
+        await page.fill('input[name="author"]', 'test Author');
+        await page.fill('input[name="url"]', 'https://example.com');
+        await page.locator("[type=submit]").click();
+
+        await page.locator('role=heading[name="test2 Blog"]').waitFor();
+        await expect(page.locator('role=heading[name="test2 Blog"]')).toBeVisible();
     });
 });

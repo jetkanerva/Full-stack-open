@@ -54,6 +54,7 @@ router.post('/api/blogs', async (request, response) => {
         await user.save()
         response.status(201).json(savedBlog);
     } catch (error) {
+        console.log(error)
         response.status(500).json({ error: error.message });
     }
 });

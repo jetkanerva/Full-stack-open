@@ -42,13 +42,13 @@ const CreateBlogForm = ({ setBlogs }) => {
       {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
       {successMessage && <div style={{ color: 'green' }}>{successMessage}</div>}
       <div style={hideWhenVisible}>
-        <button onClick={() => setFormVisible(true)}>Create new</button>
+        <button onClick={() => setFormVisible(true)}>New</button>
       </div>
       <div style={showWhenVisible}>
         <h2>Create new blog</h2>
         <form onSubmit={handleNewBlog}>
           <div>
-            <label htmlFor="title">Title:</label>
+            Title:
             <input
               id="title"
               type="text"
@@ -58,7 +58,7 @@ const CreateBlogForm = ({ setBlogs }) => {
             />
           </div>
           <div>
-            <label htmlFor="author">Author:</label>
+            Author:
             <input
               id="author"
               type="text"
@@ -68,7 +68,7 @@ const CreateBlogForm = ({ setBlogs }) => {
             />
           </div>
           <div>
-            <label htmlFor="url">URL:</label>
+            URL:
             <input
               id="url"
               type="text"

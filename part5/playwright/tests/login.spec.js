@@ -1,6 +1,6 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
 
-describe('Blog app', () => {
+describe('Login tests', () => {
     beforeEach(async ({ page, request }) => {
         await request.post('http:localhost:3001/api/testing/reset')
         await request.post('http://localhost:3001/api/users', {
@@ -27,23 +27,27 @@ describe('Blog app', () => {
         test('succeeds with correct credentials', async ({ page }) => {
             await page.fill('input[name="Username"]', 'mluukkai');
             await page.fill('input[name="Password"]', 'salainen');
-            await page.click('text=login');
+            await page.click('role=button[name="login"]');
 
-            await expect(page.locator('role=button', { name: 'logout' })).toBeVisible();
-            await expect(page.locator('role=heading', { name: 'blogs' })).toBeVisible();
-            await expect(page.locator('role=heading', { name: 'Matti Luukkainen logged in' })).toBeVisible();
+            await page.locator('role=button[name="logout"]').waitFor();
+
+            await expect(page.locator('role=button[name="logout"]')).toBeVisible();
+            await expect(page.locator('role=heading[name="blogs"]')).toBeVisible();
+            await expect(page.locator('role=heading[name="Matti Luukkainen logged in"]')).toBeVisible();
         })
 
         test('fails with wrong credentials', async ({ page }) => {
             await page.fill('input[name="Username"]', 'mluukkai');
             await page.fill('input[name="Password"]', 'wrongpassword');
-            await page.click('text=login');
+            await page.click('role=button[name="login"]');
 
-            await expect(page.locator('role=button', { name: 'logout' })).toBeVisible();
-            await expect(page.locator('role=heading', { name: 'blogs' })).toBeVisible();
-            await expect(page.locator('role=heading', { name: 'Matti Luukkainen logged in' })).toBeVisible();
+            await page.locator('role=heading[name="Wrong credentials"]').waitFor();
 
-            await expect(page.locator('role=heading', { name: 'Wrong credentials' })).toBeVisible();
+            await expect(page.locator('role=button[name="logout"]')).toBeHidden();
+            await expect(page.locator('role=heading[name="blogs"]')).toBeHidden();
+            await expect(page.locator('role=heading[name="Matti Luukkainen logged in"]')).toBeHidden();
+
+            await expect(page.locator('role=button[name="login"]')).toBeVisible();
         })
     });
 })
