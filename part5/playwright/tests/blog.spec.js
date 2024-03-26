@@ -110,6 +110,54 @@ describe('Blog tests', () => {
         // The Delete button should not be shown for another user
         await expect(page.getByText('Delete')).toBeHidden()
     });
+
+    test('blogs are ordered by likes in descending order', async ({ page }) => {
+        // Create first blog
+        await page.click('role=button[name="New"]');
+        await page.locator('role=button[name="Create"]').waitFor();
+        await page.waitForSelector('input[name="title"]', { state: 'visible' });
+        await page.fill('input[name="title"]', 'test1 Blog');
+        await page.fill('input[name="author"]', 'test1 Author');
+        await page.fill('input[name="url"]', 'https://example1.com');
+        await page.locator("[type=submit]").click();
+        await page.locator('role=heading[name="test1 Blog"]').waitFor();
+
+        // Like the first blog once
+        await page.goto('http://localhost:5173');
+        await page.getByText('View').click()
+        await page.locator('role=button[name="Hide"]').waitFor();
+        await page.locator('role=button[name="Like"]').click();
+        await page.locator('role=button[name="Like"]').click();
+
+        await page.goto('http://localhost:5173');
+
+        // Create the second blog
+        await page.click('role=button[name="New"]');
+        await page.locator('role=button[name="Create"]').waitFor();
+        await page.waitForSelector('input[name="title"]', { state: 'visible' });
+        await page.fill('input[name="title"]', 'test2 Blog');
+        await page.fill('input[name="author"]', 'test2 Author');
+        await page.fill('input[name="url"]', 'https://example2.com');
+        await page.locator("[type=submit]").click();
+        await page.locator('role=heading[name="test2 Blog"]').waitFor();
+
+        // Like the second blog twice
+        await page.locator('.blog:has-text("test2 Blog") >> text=View').click();
+        await page.locator('role=button[name="Hide"]').waitFor();
+        await page.locator('role=button[name="Like"]').click();
+        await page.locator('role=button[name="Like"]').click();
+        await page.locator('role=button[name="Like"]').click();
+
+        // Test that blogs are in correct order
+        console.log("Blog order:")
+        const pageContent = await page.content();
+        console.log(pageContent);
+        const indexTest2Blog = pageContent.indexOf('test2 Blog');
+        const indexTest1Blog = pageContent.indexOf('test1 Blog');
+        expect(indexTest2Blog).not.toEqual(-1);
+        expect(indexTest1Blog).not.toEqual(-1);
+        expect(indexTest2Blog).toBeLessThan(indexTest1Blog);
+    });
 });
 
 async function createAndLoginUser(page, name, username, password, request) {
