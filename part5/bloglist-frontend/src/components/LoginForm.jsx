@@ -26,8 +26,8 @@ const LoginForm = ({ username, setUsername, password, setPassword, handleLogin, 
         </div>
         <button type="submit">login</button>
       </form>
-      {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
-      {successMessage && <div style={{ color: 'green' }}>{successMessage}</div>}
+      {errorMessage && <h4 style={{ color: 'red' }}>{errorMessage}</h4>}
+      {successMessage && <h4 style={{ color: 'green' }}>{successMessage}</h4>}
     </div>
   )
 }

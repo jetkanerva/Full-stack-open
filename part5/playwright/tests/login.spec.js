@@ -22,4 +22,28 @@ describe('Blog app', () => {
 
         await expect(page.locator('role=button', { name: 'login' })).toBeVisible();
     });
+
+    describe('Login', () => {
+        test('succeeds with correct credentials', async ({ page }) => {
+            await page.fill('input[name="Username"]', 'mluukkai');
+            await page.fill('input[name="Password"]', 'salainen');
+            await page.click('text=login');
+
+            await expect(page.locator('role=button', { name: 'logout' })).toBeVisible();
+            await expect(page.locator('role=heading', { name: 'blogs' })).toBeVisible();
+            await expect(page.locator('role=heading', { name: 'Matti Luukkainen logged in' })).toBeVisible();
+        })
+
+        test('fails with wrong credentials', async ({ page }) => {
+            await page.fill('input[name="Username"]', 'mluukkai');
+            await page.fill('input[name="Password"]', 'wrongpassword');
+            await page.click('text=login');
+
+            await expect(page.locator('role=button', { name: 'logout' })).toBeVisible();
+            await expect(page.locator('role=heading', { name: 'blogs' })).toBeVisible();
+            await expect(page.locator('role=heading', { name: 'Matti Luukkainen logged in' })).toBeVisible();
+
+            await expect(page.locator('role=heading', { name: 'Wrong credentials' })).toBeVisible();
+        })
+    });
 })
