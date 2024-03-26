@@ -61,7 +61,7 @@ const Blog = ({ blog, setBlogs, setErrorMessage, user }) => {
         <div>
           <p>URL: {blog.url}</p>
           <p>Likes: {blog.likes}
-            <button onClick={handleLike}>Like</button>
+            <button className="Like" onClick={handleLike}>Like</button>
           </p>
           <p>Added by: {blog.users[0].name}</p>
           {blog.users[0].name === user.name ?
